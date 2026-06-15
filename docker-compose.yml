@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - '8000:8000'
+    environment:
+      - PORT=8000
+      - ALLOW_ORIGINS=*
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:80'
+    environment:
+      # When running in Docker on macOS, use host.docker.internal to reach backend
+      - VITE_WS_URL=ws://host.docker.internal:8000/ws
+    restart: unless-stopped

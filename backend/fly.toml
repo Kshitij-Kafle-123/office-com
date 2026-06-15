@@ -1,0 +1,16 @@
+[app]
+# Replace this with the name you choose when running `fly launch` or set below.
+app = "temp-chat-backend"
+
+[build]
+  image = ""
+
+[deploy]
+  release_command = ""
+
+[env]
+  # Set allowed origins for CORS in production
+  ALLOW_ORIGINS = "https://your-frontend-domain"
+
+[experimental]
+  allowed_public_ports = []
