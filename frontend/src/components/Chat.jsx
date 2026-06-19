@@ -5,7 +5,15 @@ import PrivateChat from './PrivateChat'
 // Normalize `VITE_WS_URL` so users can set an http(s) origin in Pages
 const _envWs = import.meta.env.VITE_WS_URL
 function normalizeWs(u) {
-  if (!u) return 'ws://localhost:8000/ws'
+  if (!u) {
+    // If running on your Cloudflare Pages hostname, default to the Render backend
+    try {
+      if (typeof window !== 'undefined' && window.location.hostname === 'office-com.pages.dev') {
+        return 'wss://office-com.onrender.com/ws'
+      }
+    } catch (e) {}
+    return 'ws://localhost:8000/ws'
+  }
   // already ws/wss
   if (u.startsWith('ws://') || u.startsWith('wss://')) return u
   try {
