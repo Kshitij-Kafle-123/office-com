@@ -39,6 +39,16 @@ Environment variables
 - `FRONTEND_VITE_WS` (frontend): WebSocket URL, default `ws://localhost:8000/ws`
 - `PORT` (backend): port for uvicorn in production
 
+Deployment secrets & where to set them
+- Add Render secrets (Render dashboard) and GitHub Secrets for CI:
+	- `ALLOW_ORIGINS` (Render service env) e.g. `https://your-site.pages.dev`
+	- `RENDER_API_KEY` (GitHub Secret) - use in CI to trigger Render deploys
+	- `RENDER_SERVICE_ID` (GitHub Secret) - the backend service id for Render
+- Frontend build envs (Cloudflare Pages or Vercel):
+	- `VITE_WS_URL` - set to `wss://<your-render-service>/ws` for production
+
+See `SECRETS_EXAMPLE.md` for full list and guidance.
+
 Deployment (overview)
 - Backend: Render (web service) — use `uvicorn app.main:app --host 0.0.0.0 --port $PORT` as start command. Allow websockets.
 - Frontend: Vercel — build with `npm run build`, set `FRONTEND_VITE_WS` to `wss://<backend-host>/ws`.
