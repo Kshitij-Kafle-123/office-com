@@ -7,13 +7,22 @@ import json
 app = FastAPI()
 manager = ConnectionManager()
 
-# Allow origins configurable via env for simple deployment. For local dev allow all.
-allow_origins = os.getenv("ALLOW_ORIGINS", "*")
+# Allow origins configurable via env. If not set, default to a safe list
+# that includes the deployed Pages site and common local dev hosts.
+allow_origins_env = os.getenv("ALLOW_ORIGINS")
 
-if allow_origins == "*":
+if allow_origins_env is None:
+    origins = [
+        "https://office-com.pages.dev",
+        "https://office-com.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+    ]
+elif allow_origins_env.strip() == "*":
     origins = ["*"]
 else:
-    origins = [o.strip() for o in allow_origins.split(",") if o.strip()]
+    origins = [o.strip() for o in allow_origins_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
