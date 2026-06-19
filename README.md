@@ -28,6 +28,16 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+Docker (optional)
+```bash
+# Build image from repo root (uses root Dockerfile which builds the backend)
+docker build -t office-com-backend:local .
+# Or build directly from backend Dockerfile
+docker build -f backend/Dockerfile -t office-com-backend:local backend
+# Run locally
+docker run --rm -p 8000:8000 office-com-backend:local
+```
+
 Frontend
 ```bash
 cd frontend
