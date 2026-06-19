@@ -66,6 +66,7 @@ function useWebSocket(username, handlers) {
 export default function Chat({ username, onLogout }) {
   const [messages, setMessages] = useState([]) // global
   const [privateMessages, setPrivateMessages] = useState({})
+  const [unread, setUnread] = useState({})
   const [users, setUsers] = useState([])
   const [selected, setSelected] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState('connecting')
@@ -81,6 +82,10 @@ export default function Chat({ username, onLogout }) {
       } else if (t === 'private_message') {
         const other = data.from === username ? data.to : data.from
         setPrivateMessages((p) => ({ ...(p || {}), [other]: [...((p || {})[other] || []), data] }))
+        // if the incoming private message is from someone not currently selected, mark unread
+        if (other !== selected) {
+          setUnread((u) => ({ ...(u || {}), [other]: ((u || {})[other] || 0) + 1 }))
+        }
       } else if (t === 'presence') {
         setUsers(data.users)
       } else if (t === 'join') {
@@ -123,7 +128,7 @@ export default function Chat({ username, onLogout }) {
   return (
     <div className="chat-root">
       <aside className="sidebar">
-        <OnlineUsers users={users} onSelect={(u)=>setSelected(u)} current={username} connectionStatus={connectionStatus} />
+        <OnlineUsers users={users} onSelect={(u)=>{ setSelected(u); setUnread((x)=>{ const c={...x}; delete c[u]; return c }) }} current={username} connectionStatus={connectionStatus} unread={unread} />
         <div className="controls">
           <button onClick={() => onLogout()}>Leave</button>
         </div>

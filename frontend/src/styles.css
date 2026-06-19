@@ -31,6 +31,9 @@ body,html,#root{height:100%;margin:0;background:linear-gradient(180deg,#071022, 
 .online-users ul{list-style:none;padding:0;margin:8px 0}
 .online-users li{padding:8px;border-radius:6px;margin-bottom:6px;background:rgba(255,255,255,0.02);cursor:pointer}
 .online-users li.me{font-weight:700}
+.online-users li{display:flex;align-items:center;justify-content:space-between}
+.online-users .user-name{flex:1}
+.badge{background:#ef4444;color:#fff;padding:2px 6px;border-radius:999px;font-size:12px;margin-left:8px}
 .private-chat{display:flex;flex-direction:column;height:100%}
 .private-chat .messages{flex:1;overflow:auto}
 .send-row{display:flex;margin-top:8px}
