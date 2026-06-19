@@ -2,36 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import OnlineUsers from './OnlineUsers'
 import PrivateChat from './PrivateChat'
 
-// Normalize `VITE_WS_URL` so users can set an http(s) origin in Pages
-const _envWs = import.meta.env.VITE_WS_URL
-function normalizeWs(u) {
-  if (!u) {
-    // If running on your Cloudflare Pages hostname, default to the Render backend
-    try {
-      if (typeof window !== 'undefined' && window.location.hostname === 'office-com.pages.dev') {
-        return 'wss://office-com.onrender.com/ws'
-      }
-    } catch (e) {}
-    return 'ws://localhost:8000/ws'
-  }
-  // already ws/wss
-  if (u.startsWith('ws://') || u.startsWith('wss://')) return u
-  try {
-    const url = new URL(u)
-    const proto = url.protocol === 'https:' ? 'wss:' : 'ws:'
-    // ensure single / between host and path, ensure path ends with /ws
-    let path = url.pathname || '/'
-    if (path.endsWith('/')) path = path.slice(0, -1)
-    if (path === '') path = ''
-    // if user already pointed to /ws, keep it
-    if (path.endsWith('/ws')) return `${proto}//${url.host}${path}`
-    return `${proto}//${url.host}${path}/ws`
-  } catch (e) {
-    return 'ws://localhost:8000/ws'
-  }
-}
-
-const DEFAULT_WS = normalizeWs(_envWs)
+// Hardcoded production WebSocket endpoint — deploy frontend as-is.
+const DEFAULT_WS = 'wss://office-com.onrender.com/ws'
 
 function useWebSocket(username, handlers) {
   const wsRef = useRef(null)
