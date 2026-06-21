@@ -67,6 +67,8 @@ export default function Chat({ username, onLogout }) {
   const [messages, setMessages] = useState([]) // global
   const [privateMessages, setPrivateMessages] = useState({})
   const [unread, setUnread] = useState({})
+  const [privateTyping, setPrivateTyping] = useState({})
+  const [globalTyping, setGlobalTyping] = useState([])
   const [users, setUsers] = useState([])
   const [selected, setSelected] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState('connecting')
@@ -80,11 +82,14 @@ export default function Chat({ username, onLogout }) {
       if (t === 'message') {
         setMessages((m) => [...m, data])
       } else if (t === 'private_message') {
-        const other = data.from === username ? data.to : data.from
-        setPrivateMessages((p) => ({ ...(p || {}), [other]: [...((p || {})[other] || []), data] }))
-        // if the incoming private message is from someone not currently selected, mark unread
-        if (other !== selected) {
-          setUnread((u) => ({ ...(u || {}), [other]: ((u || {})[other] || 0) + 1 }))
+        // only treat as incoming if it's from someone else
+        if (data.from !== username) {
+          const other = data.from
+          setPrivateMessages((p) => ({ ...(p || {}), [other]: [...((p || {})[other] || []), data] }))
+          // if not currently viewing, increment unread
+          if (other !== selected) {
+            setUnread((u) => ({ ...(u || {}), [other]: ((u || {})[other] || 0) + 1 }))
+          }
         }
       } else if (t === 'presence') {
         setUsers(data.users)
@@ -96,11 +101,13 @@ export default function Chat({ username, onLogout }) {
         const who = data.from
         const to = data.to
         if (to) {
-          setTypingState((s) => ({ ...s, [who]: true }))
-          setTimeout(() => setTypingState((s) => ({ ...s, [who]: false })), 2000)
+          // private typing indicator for recipient only
+          setPrivateTyping((s) => ({ ...s, [who]: true }))
+          setTimeout(() => setPrivateTyping((s) => ({ ...s, [who]: false })), 2000)
         } else {
-          setTypingState((s) => ({ ...s, [who]: true }))
-          setTimeout(() => setTypingState((s) => ({ ...s, [who]: false })), 1500)
+          // global typing indicator
+          setGlobalTyping((arr) => (arr.includes(who) ? arr : [...arr, who]))
+          setTimeout(() => setGlobalTyping((arr) => arr.filter((x) => x !== who)), 1500)
         }
       } else if (t === 'error') {
         if (data.reason === 'username_taken') {
@@ -118,6 +125,9 @@ export default function Chat({ username, onLogout }) {
   }
 
   const sendPrivate = (to, text) => {
+    // locally append the message for sender's view, since backend no longer echoes
+    const payload = { type: 'private_message', from: username, to, text, timestamp: new Date().toISOString() }
+    setPrivateMessages((p) => ({ ...(p || {}), [to]: [...((p || {})[to] || []), payload] }))
     send({ type: 'private_message', to, text })
   }
 
@@ -150,7 +160,7 @@ export default function Chat({ username, onLogout }) {
               </div>
             ))}
           </div>
-          <GlobalComposer onSend={sendGlobal} onTyping={()=>sendTyping(null)} typing={Object.keys(typingState).length>0} />
+          <GlobalComposer onSend={sendGlobal} onTyping={()=>sendTyping(null)} typing={globalTyping.length>0} />
         </section>
 
         <section className="private-area">
@@ -159,7 +169,7 @@ export default function Chat({ username, onLogout }) {
               target={selected}
               messages={privateMessages[selected] || []}
               onSend={(text) => sendPrivate(selected, text)}
-              typing={typingState[selected]}
+              typing={privateTyping[selected]}
             />
           ) : (
             <div className="hint">Select a user to start a private chat</div>

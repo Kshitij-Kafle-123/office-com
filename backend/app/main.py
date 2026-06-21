@@ -99,9 +99,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         "text": text,
                         "timestamp": utc_iso(),
                     }
-                    # send to recipient and echo to sender
+                    # send to recipient only (do not echo to sender)
                     await manager.send_to(to, payload)
-                    await manager.send_to(username, payload)
                 else:
                     await websocket.send_json({"type": "error", "reason": "user_offline_or_missing"})
 
